@@ -403,6 +403,111 @@ def make_supervised_pipeline(classifier: BaseEstimator) -> BaseEstimator:
     )
 
 
+def run_supervised_experiment(
+    estimator: BaseEstimator,
+    experiment_name: str,
+    experiment_slug: str,
+    csv_path: Path | None = None,
+    output_dir: Path | None = None,
+    test_size: float = DEFAULT_TEST_SIZE,
+    n_splits: int = DEFAULT_N_SPLITS,
+    n_repeats: int = DEFAULT_N_REPEATS,
+    fn_cost: float = DEFAULT_FN_COST,
+    fp_cost: float = DEFAULT_FP_COST,
+) -> dict[str, Path | pd.DataFrame]:
+    selected_output = (output_dir or DEFAULT_OUTPUT_DIR).resolve() / experiment_slug
+    selected_output.mkdir(parents=True, exist_ok=True)
+
+    df, selected_csv = load_dataset(csv_path)
+    x, y = split_features_target(df)
+    x_train, x_test, y_train, y_test = stratified_train_test_split(
+        x,
+        y,
+        test_size=test_size,
+        random_state=RANDOM_STATE,
+    )
+
+    cv_results = repeated_stratified_cv(
+        estimator,
+        x_train,
+        y_train,
+        n_splits=n_splits,
+        n_repeats=n_repeats,
+        random_state=RANDOM_STATE,
+        fn_cost=fn_cost,
+        fp_cost=fp_cost,
+    )
+    cv_summary = summarize_cv_metrics(cv_results)
+    fitted_model, test_metrics, y_score = fit_and_evaluate_test(
+        estimator,
+        x_train,
+        y_train,
+        x_test,
+        y_test,
+        fn_cost=fn_cost,
+        fp_cost=fp_cost,
+    )
+    y_pred = fitted_model.predict(x_test)
+
+    cv_results.to_csv(selected_output / "cv_metricas_por_fold.csv", index=False)
+    cv_summary.to_csv(selected_output / "cv_metricas_resumen.csv", index=False)
+    test_metrics.to_csv(selected_output / "test_metricas.csv", index=False)
+    pd.crosstab(
+        pd.Series(y_test.to_numpy(), name="real"),
+        pd.Series(y_pred, name="predicho"),
+    ).to_csv(selected_output / "test_matriz_confusion.csv")
+
+    save_confusion_matrix_plot(
+        y_test,
+        y_pred,
+        selected_output / "test_matriz_confusion.png",
+        f"{experiment_name} - Matriz de confusion en test",
+    )
+    save_roc_curve_plot(
+        y_test,
+        y_score,
+        selected_output / "test_roc_curve.png",
+        f"{experiment_name} - Curva ROC en test",
+    )
+    learning_curve_df = save_learning_curve_plot(
+        estimator,
+        x_train,
+        y_train,
+        selected_output / "learning_curve_recall.png",
+        f"{experiment_name} - Curva de aprendizaje",
+        n_splits=n_splits,
+        random_state=RANDOM_STATE,
+    )
+    learning_curve_df.to_csv(selected_output / "learning_curve_recall.csv", index=False)
+
+    report_path = write_markdown_report(
+        selected_output / "reporte.md",
+        experiment_name,
+        selected_csv.resolve(),
+        cv_summary,
+        test_metrics,
+        fn_cost=fn_cost,
+        fp_cost=fp_cost,
+        n_splits=n_splits,
+        n_repeats=n_repeats,
+    )
+
+    print(f"CSV usado: {selected_csv}")
+    print(f"Resultados guardados en: {selected_output}")
+    print(cv_summary.to_string(index=False))
+    print("Metricas de test final:")
+    print(test_metrics.to_string(index=False))
+    print(f"Reporte guardado en: {report_path}")
+
+    return {
+        "output_dir": selected_output,
+        "cv_results": cv_results,
+        "cv_summary": cv_summary,
+        "test_metrics": test_metrics,
+        "report_path": report_path,
+    }
+
+
 def write_markdown_report(
     output_path: Path,
     experiment_name: str,

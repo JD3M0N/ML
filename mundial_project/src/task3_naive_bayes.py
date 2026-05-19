@@ -4,27 +4,17 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 
-from task3_common import (
-    add_common_args,
-    make_supervised_pipeline,
-    run_supervised_experiment,
-)
+import task3_common
 
 
-EXPERIMENT_NAME = "Regresion Logistica"
-EXPERIMENT_SLUG = "logistic_regression"
+EXPERIMENT_NAME = "Naive Bayes Gaussiano"
+EXPERIMENT_SLUG = "naive_bayes"
 
 
 def build_estimator() -> object:
-    classifier = LogisticRegression(
-        max_iter=2000,
-        solver="lbfgs",
-        class_weight=None,
-        random_state=42,
-    )
-    return make_supervised_pipeline(classifier)
+    return task3_common.make_supervised_pipeline(GaussianNB())
 
 
 def run(
@@ -36,7 +26,7 @@ def run(
     fn_cost: float = 5.0,
     fp_cost: float = 1.0,
 ) -> dict[str, Path | pd.DataFrame]:
-    return run_supervised_experiment(
+    return task3_common.run_supervised_experiment(
         build_estimator(),
         EXPERIMENT_NAME,
         EXPERIMENT_SLUG,
@@ -51,8 +41,8 @@ def run(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Task 3: experimento de regresion logistica.")
-    add_common_args(parser)
+    parser = argparse.ArgumentParser(description="Task 3: experimento de Naive Bayes.")
+    task3_common.add_common_args(parser)
     args = parser.parse_args()
     run(
         csv_path=args.csv,
