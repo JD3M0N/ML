@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CSV = PROJECT_ROOT / "data" / "foot.csv"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "outputs" / "graficas_frecuencia"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Genera graficas de frecuencia para cada feature de un CSV."
@@ -15,13 +20,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--csv",
         type=Path,
-        default=Path(__file__).with_name("foot.csv"),
-        help="Ruta al archivo CSV. Por defecto usa Mundial/foot.csv.",
+        default=DEFAULT_CSV,
+        help="Ruta al archivo CSV. Por defecto usa mundial_project/data/foot.csv.",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path(__file__).with_name("graficas_frecuencia"),
+        default=DEFAULT_OUTPUT_DIR,
         help="Carpeta donde se guardaran las graficas.",
     )
     parser.add_argument(
@@ -87,17 +92,20 @@ def plot_feature_frequency(
 
 def main() -> None:
     args = parse_args()
-    df = pd.read_csv(args.csv)
+    csv_path = args.csv.resolve()
+    output_dir = args.output_dir.resolve()
+
+    df = pd.read_csv(csv_path)
 
     target = args.target.strip()
     features = [column for column in df.columns if column != target]
     if not features:
         raise ValueError("No hay features para graficar. Revisa --target o el CSV.")
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for feature in features:
-        output_path = args.output_dir / f"{clean_filename(feature)}_frecuencia.png"
+        output_path = output_dir / f"{clean_filename(feature)}_frecuencia.png"
         plot_feature_frequency(
             df[feature],
             feature,
@@ -115,7 +123,7 @@ def main() -> None:
         plot_feature_frequency(
             df[feature],
             feature,
-            args.output_dir / f"{clean_filename(feature)}_frecuencia.png",
+            output_dir / f"{clean_filename(feature)}_frecuencia.png",
             args.max_categories,
             args.bins,
             ax=ax,
@@ -126,11 +134,12 @@ def main() -> None:
 
     fig.suptitle("Graficas de frecuencia por feature", fontsize=16)
     fig.tight_layout(rect=(0, 0, 1, 0.98))
-    combined_path = args.output_dir / "todas_las_frecuencias.png"
+    combined_path = output_dir / "todas_las_frecuencias.png"
     fig.savefig(combined_path, dpi=180)
     plt.close(fig)
 
-    print(f"Graficas guardadas en: {args.output_dir.resolve()}")
+    print(f"CSV analizado: {csv_path}")
+    print(f"Graficas guardadas en: {output_dir}")
     print(f"Grafica combinada: {combined_path.resolve()}")
 
 
