@@ -1,0 +1,2 @@
+accuracy,precision_condition_1,recall_condition_1,f1_condition_1,medical_cost,roc_auc,true_negatives,false_positives,false_negatives,true_positives
+0.5833333333333334,0.6363636363636364,0.25,0.358974358974359,1.8166666666666667,0.7142857142857143,28.0,4.0,21.0,7.0
