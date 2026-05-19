@@ -1,0 +1,8 @@
+metrica,valor
+filas,297
+columnas,14
+features,13
+columna_objetivo,condition
+valores_objetivo,"[0, 1]"
+valores_nulos_totales,0
+filas_duplicadas,0
