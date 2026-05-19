@@ -17,6 +17,7 @@ import task3_common
 DEFAULT_OUTPUT_DIR = task3_common.PROJECT_ROOT / "outputs" / "task4"
 DEFAULT_REPORT_PATH = task3_common.PROJECT_ROOT / "reports" / "task4_optimizacion_parametros.md"
 PRIMARY_METRIC = "recall_condition_1"
+SELECTION_METRIC = "medical_cost"
 MODEL_SLUGS = ["logistic_regression", "svm", "knn"]
 MODEL_NAMES = {
     "logistic_regression": "Regresion Logistica",
@@ -68,8 +69,8 @@ def choose_best_index(cv_results: dict[str, Any]) -> int:
     results = pd.DataFrame(cv_results)
     ranked = results.sort_values(
         by=[
-            "mean_test_recall_condition_1",
             "mean_test_neg_medical_cost",
+            "mean_test_recall_condition_1",
             "mean_test_roc_auc",
         ],
         ascending=[False, False, False],
@@ -131,8 +132,8 @@ def tidy_grid_results(search: GridSearchCV) -> pd.DataFrame:
     tidy["mean_train_medical_cost"] = -tidy["mean_train_neg_medical_cost"]
     return tidy.sort_values(
         by=[
-            "mean_test_recall_condition_1",
             "mean_test_neg_medical_cost",
+            "mean_test_recall_condition_1",
             "mean_test_roc_auc",
         ],
         ascending=[False, False, False],
@@ -289,7 +290,7 @@ def write_model_report(
 
 ## Objetivo
 
-Este experimento optimiza hiperparametros para predecir `condition`, guiado por `recall_condition_1`. En el contexto medico del proyecto se prioriza detectar pacientes con `condition=1`, porque el falso negativo es el error mas costoso. El coste auxiliar mantiene FN={fn_cost:g} y FP={fp_cost:g}.
+Este experimento optimiza hiperparametros para predecir `condition`, guiado por el coste medico normalizado con FN={fn_cost:g} y FP={fp_cost:g}. En el contexto medico del proyecto se prioriza detectar pacientes con `condition=1`, pero se evita seleccionar configuraciones degeneradas que maximizan recall a costa de muchos falsos positivos o mala generalizacion.
 
 ## Mejor configuracion
 

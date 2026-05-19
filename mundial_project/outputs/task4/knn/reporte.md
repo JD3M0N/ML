@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Este experimento optimiza hiperparametros para predecir `condition`, guiado por `recall_condition_1`. En el contexto medico del proyecto se prioriza detectar pacientes con `condition=1`, porque el falso negativo es el error mas costoso. El coste auxiliar mantiene FN=5 y FP=1.
+Este experimento optimiza hiperparametros para predecir `condition`, guiado por el coste medico normalizado con FN=5 y FP=1. En el contexto medico del proyecto se prioriza detectar pacientes con `condition=1`, pero se evita seleccionar configuraciones degeneradas que maximizan recall a costa de muchos falsos positivos o mala generalizacion.
 
 ## Mejor configuracion
 

@@ -90,8 +90,8 @@ def build_comparison(task4_dir: Path, task3_dir: Path) -> pd.DataFrame:
     if comparison.empty:
         raise ValueError(f"No se encontraron resultados de Task 4 en {task4_dir}.")
     return comparison.sort_values(
-        by=["cv_recall_condition_1_mean", "cv_medical_cost_mean", "test_false_negatives"],
-        ascending=[False, True, True],
+        by=["cv_medical_cost_mean", "cv_recall_condition_1_mean", "cv_roc_auc_mean"],
+        ascending=[True, False, False],
     ).reset_index(drop=True)
 
 
@@ -186,7 +186,7 @@ def write_report(comparison: pd.DataFrame, feature_ranking: pd.DataFrame, report
 
 ## Estrategia
 
-Se optimizaron los tres modelos mas prometedores de Task 3: Regresion Logistica, SVM RBF y KNN. La busqueda se guio por `recall_condition_1`, porque el falso negativo es el error mas costoso en este contexto medico. Como desempate se uso menor coste medico normalizado y luego mayor ROC-AUC.
+Se optimizaron los tres modelos mas prometedores de Task 3: Regresion Logistica, SVM RBF y KNN. La busqueda se guio por coste medico normalizado con FN=5 y FP=1. Esta metrica sigue penalizando mas los falsos negativos, pero evita seleccionar configuraciones degeneradas que consiguen recall alto prediciendo demasiados positivos. Como desempate se uso mayor `recall_condition_1` y luego mayor ROC-AUC.
 
 ## Comparacion de modelos optimizados
 
