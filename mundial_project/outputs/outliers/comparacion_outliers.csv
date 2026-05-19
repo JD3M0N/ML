@@ -1,0 +1,6 @@
+feature,outliers_iqr,outliers_zscore,coinciden,solo_iqr,solo_zscore,acuerdo_porcentaje
+feature_10,1,1,1,0,0,100.0
+feature_11,9,2,2,7,0,22.22222222222222
+feature_13,5,2,2,3,0,40.0
+feature_5,0,0,0,0,0,100.0
+feature_6,5,4,4,1,0,80.0

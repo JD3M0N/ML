@@ -1,0 +1,6 @@
+feature,outliers_manual,outliers_scipy,coinciden,solo_manual,solo_scipy,acuerdo_porcentaje
+feature_5,0,0,0,0,0,100.0
+feature_6,4,4,4,0,0,100.0
+feature_10,1,1,1,0,0,100.0
+feature_11,2,2,2,0,0,100.0
+feature_13,2,2,2,0,0,100.0
