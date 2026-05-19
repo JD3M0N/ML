@@ -1,0 +1,2 @@
+model__C,model__class_weight,model__penalty,model__solver
+1.0,balanced,l1,liblinear
