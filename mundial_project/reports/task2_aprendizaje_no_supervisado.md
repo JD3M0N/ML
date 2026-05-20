@@ -16,19 +16,29 @@ Se necesitaron 8 componentes para alcanzar al menos 80% de varianza y 12 compone
 
 ## K-Means
 
-El mejor valor evaluado por silhouette fue k=2, con silhouette=0.1682, Davies-Bouldin=2.0747 y Calinski-Harabasz=65.2677.
+El metodo del codo extendido se evaluo para k=1..15. La inercia baja al aumentar k, como es esperable, pero no aparece una rodilla posterior que justifique una segmentacion mucho mas fina.
+Se conserva k=2 como particion principal porque separa dos perfiles generales, mantiene una interpretacion clara y se relaciona de forma marcada con `condition` en el cruce posterior.
+Tambien se compararon k=3 y k=5 como lecturas mas granulares; generan subgrupos mas especificos, pero fragmentan la muestra y se dejan como exploracion secundaria.
 Los perfiles de clusters y el cruce posterior con `condition` se guardaron para interpretar que variables caracterizan cada grupo.
 Las variables con mayor diferencia media entre clusters fueron: feature_10, feature_6, feature_5, feature_11, feature_13.
 En el cruce posterior, el cluster 0 contiene 77.6% de pacientes con `condition=0`, mientras que el cluster 1 contiene 72.3% de pacientes con `condition=1`.
 
 ## Clustering jerarquico
 
-El mejor valor evaluado fue k=2, con silhouette=0.1562. Esta tecnica sirve como contraste frente a K-Means.
+El analisis de disparidad del dendrograma muestra su mayor salto de altura en la fusion 296, con salto=7.8584.
+Ese salto ocurre al final del proceso, antes de fusionar los dos macrogrupos restantes, lo que apoya una lectura de dos grupos principales.
+Esta tecnica sirve como contraste frente a K-Means porque llega a una lectura global compatible desde otra familia de clustering.
 
 ## DBSCAN
 
-La mejor configuracion evaluable fue eps=2.0 y min_samples=5, con 2 clusters, 185 puntos de ruido y silhouette=0.0166.
+La configuracion con dos clusters y menos ruido fue eps=2.0 y min_samples=5, pero aun conserva 185 puntos de ruido.
+
+## Trabajo extra: silhouette y t-SNE
+
+Silhouette se conserva como metrica complementaria: en la evaluacion base el mayor valor fue k=2, con silhouette=0.1682.
+En clustering jerarquico, la mejor lectura complementaria por silhouette fue k=2, con silhouette=0.1562.
+t-SNE se conserva como visualizacion adicional para mirar vecindarios locales, pero no se usa como criterio principal de seleccion.
 
 ## Conclusion
 
-Los experimentos sugieren una estructura latente parcialmente relacionada con `condition`, especialmente al comparar los clusters de K-Means con la variable objetivo despues del agrupamiento. Aun asi, las metricas internas deben interpretarse con cautela: los clusters son perfiles exploratorios de pacientes y no diagnosticos.
+Los experimentos sugieren una estructura latente parcialmente relacionada con `condition`, especialmente al combinar K-Means con k=2, el metodo del codo, la disparidad jerarquica y el cruce posterior con la variable objetivo. Los clusters son perfiles exploratorios de pacientes y no diagnosticos.

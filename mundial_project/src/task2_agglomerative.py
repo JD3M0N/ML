@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pandas as pd
+from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 
@@ -40,6 +42,41 @@ def save_agglomerative_outputs(
     cluster_df = df.copy()
     cluster_df["cluster_agglomerative"] = labels
     cluster_df.to_csv(output_dir / "agglomerative_clusters.csv", index=False)
+
+    linkage_matrix = linkage(x_processed, method="ward")
+    merge_heights = linkage_matrix[:, 2]
+    previous_heights = pd.Series(merge_heights).shift(1, fill_value=0).to_numpy()
+    disparity_df = pd.DataFrame(
+        {
+            "fusion": range(1, len(merge_heights) + 1),
+            "altura_fusion": merge_heights,
+            "salto_altura": merge_heights - previous_heights,
+            "clusters_restantes": len(df) - pd.Series(range(1, len(merge_heights) + 1)),
+        }
+    )
+    disparity_df.sort_values("salto_altura", ascending=False).to_csv(
+        output_dir / "agglomerative_disparidad.csv",
+        index=False,
+    )
+
+    fig, ax = plt.subplots(figsize=(11, 6))
+    dendrogram(
+        linkage_matrix,
+        truncate_mode="lastp",
+        p=30,
+        leaf_rotation=45,
+        leaf_font_size=9,
+        show_contracted=True,
+        ax=ax,
+    )
+    ax.set_title("Dendrograma jerarquico truncado")
+    ax.set_xlabel("Clusters u observaciones agrupadas")
+    ax.set_ylabel("Altura de fusion")
+    ax.grid(axis="y", alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(output_dir / "agglomerative_dendrogram.png", dpi=180, bbox_inches="tight")
+    plt.close(fig)
+
     pd.crosstab(cluster_df["cluster_agglomerative"], cluster_df[TARGET]).to_csv(
         output_dir / "agglomerative_condition_crosstab.csv"
     )

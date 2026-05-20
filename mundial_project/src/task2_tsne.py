@@ -46,6 +46,18 @@ def save_tsne_outputs(x_processed, y: pd.Series, kmeans_labels, output_dir: Path
     fig.tight_layout()
     fig.savefig(output_dir / "tsne_kmeans.png", dpi=180, bbox_inches="tight")
     plt.close(fig)
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    sns.scatterplot(data=tsne_df, x="TSNE1", y="TSNE2", hue=TARGET, palette="Set2", ax=axes[0])
+    axes[0].set_title("t-SNE coloreado por condition")
+    axes[0].grid(alpha=0.25)
+    sns.scatterplot(data=tsne_df, x="TSNE1", y="TSNE2", hue="cluster_kmeans", palette="Set1", ax=axes[1])
+    axes[1].set_title("t-SNE coloreado por K-Means")
+    axes[1].grid(alpha=0.25)
+    fig.suptitle("Comparacion visual t-SNE: condition vs clusters", y=1.02)
+    fig.tight_layout()
+    fig.savefig(output_dir / "tsne_condition_kmeans.png", dpi=180, bbox_inches="tight")
+    plt.close(fig)
     return tsne_df
 
 
