@@ -7,3 +7,4 @@ seaborn==0.13.2
 ipykernel==7.1.0
 notebook==7.5.1
 nbformat==5.10.4
+xgboost==3.0.2

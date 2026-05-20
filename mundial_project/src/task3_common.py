@@ -330,7 +330,7 @@ def save_learning_curve_plot(
     title: str,
     n_splits: int = DEFAULT_N_SPLITS,
     random_state: int = RANDOM_STATE,
-) -> pd.DataFrame:
+    ) -> tuple[pd.DataFrame, str]:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -386,10 +386,40 @@ def save_learning_curve_plot(
     ax.set_ylim(0, 1.05)
     ax.grid(alpha=0.25)
     ax.legend()
+    # Preparar diagnostico automatizado para anadirlo bajo la figura
+    try:
+        last_train = float(curve_df["train_recall_mean"].iloc[-1])
+        last_val = float(curve_df["validation_recall_mean"].iloc[-1])
+        gap = last_train - last_val
+        trend = "estable"
+        if curve_df["validation_recall_mean"].is_monotonic_increasing:
+            trend = "mejorando con mas datos"
+        elif curve_df["validation_recall_mean"].is_monotonic_decreasing:
+            trend = "empeorando con mas datos"
+
+        if last_train >= 0.8 and gap > 0.05:
+            diagnosis = "Posible sobreajuste: el recall en entrenamiento es significativamente mayor que en validacion."
+        elif last_train < 0.6 and last_val < 0.6:
+            diagnosis = "Posible infraajuste: tanto entrenamiento como validacion muestran recall bajo."
+        elif gap <= 0.05 and last_val >= 0.6:
+            diagnosis = "Buen ajuste: poca diferencia entre entrenamiento y validacion y recall razonable en validacion."
+        else:
+            diagnosis = "Comportamiento mixto: revisar curvas y varianza entre folds para mas contexto."
+
+        diag_text = (
+            f"Diagnostico automatizado:\nTrain recall (ult.): {last_train:.3f}  |  Val recall (ult.): {last_val:.3f}  |  Gap: {gap:.3f}  |  Tendencia: {trend}\nInterpretacion: {diagnosis}"
+        )
+    except Exception:
+        diag_text = "No fue posible generar un diagnostico automatico de la curva de aprendizaje."
+
+    # Reservar espacio inferior para el texto y añadirlo
+    fig.subplots_adjust(bottom=0.25)
+    fig.text(0.01, 0.02, diag_text, fontsize=9)
     fig.tight_layout()
     fig.savefig(output_path, dpi=180, bbox_inches="tight")
     plt.close(fig)
-    return curve_df
+
+    return curve_df, diag_text
 
 
 def make_supervised_pipeline(classifier: BaseEstimator) -> BaseEstimator:
@@ -469,7 +499,7 @@ def run_supervised_experiment(
         selected_output / "test_roc_curve.png",
         f"{experiment_name} - Curva ROC en test",
     )
-    learning_curve_df = save_learning_curve_plot(
+    learning_curve_df, learning_curve_diag = save_learning_curve_plot(
         estimator,
         x_train,
         y_train,
@@ -479,6 +509,8 @@ def run_supervised_experiment(
         random_state=RANDOM_STATE,
     )
     learning_curve_df.to_csv(selected_output / "learning_curve_recall.csv", index=False)
+    # Guardar diagnostico en un archivo de texto para referencia
+    (selected_output / "learning_curve_recall_diagnostico.txt").write_text(learning_curve_diag, encoding="utf-8")
 
     report_path = write_markdown_report(
         selected_output / "reporte.md",
@@ -490,6 +522,7 @@ def run_supervised_experiment(
         fp_cost=fp_cost,
         n_splits=n_splits,
         n_repeats=n_repeats,
+        learning_curve_diagnosis=learning_curve_diag,
     )
 
     print(f"CSV usado: {selected_csv}")
@@ -518,6 +551,7 @@ def write_markdown_report(
     fp_cost: float,
     n_splits: int,
     n_repeats: int,
+    learning_curve_diagnosis: str | None = None,
 ) -> Path:
     def metric_value(df: pd.DataFrame, metric: str, column: str = "mean") -> float:
         return float(df.loc[df["metric"] == metric, column].iloc[0])
@@ -573,6 +607,18 @@ La metrica principal es el recall de `condition=1` porque un falso negativo impl
 - `test_roc_curve.png`
 - `learning_curve_recall.png`
 """
+    if learning_curve_diagnosis:
+        content = content + f"\n## Diagnostico de la curva de aprendizaje\n\n{learning_curve_diagnosis}\n"
+        content = content + (
+            "\n## Posibles causas de bajo accuracy en redes neuronales y recomendaciones\n\n"
+            "- Desequilibrio de clases: si la clase positiva es rara, la accuracy global puede ser alta aunque el modelo falle en detectar la condicion.\n"
+            "- Infraajuste: arquitectura o capacidad insuficiente, learning rate inapropiado, o pocas iteraciones.\n"
+            "- Sobreajuste: modelo demasiado complejo sin regularizacion adecuada; gap grande entre entrenamiento y validacion.\n"
+            "- Preprocesado: features irrelevantes o mal escaladas afectan la convergencia; revisar estandarizacion y encoding.\n"
+            "- Hiperparametros: `alpha` (regularizacion), `learning_rate_init`, `hidden_layer_sizes` y `max_iter` influyen fuertemente.\n"
+            "- Early stopping: si esta activado puede detener antes de convergencia si la validacion es ruidosa.\n"
+            "\nRecomendaciones:\n- Revisar balance de clases y usar `class_weight='balanced'` o re-muestreo si procede.\n- Probar aumentar `max_iter`, ajustar `learning_rate_init` y `alpha`, y explorar diferentes `hidden_layer_sizes`.\n- Usar validacion cruzada estable y observar curvas de aprendizaje (ya generadas) para decidir si mas datos ayudarian.\n- Priorizar metrics de interes (recall para la clase positiva) en lugar de accuracy.\n"
+        )
     output_path.write_text(content, encoding="utf-8")
     return output_path
 

@@ -1,0 +1,7 @@
+decisión,valor,justificación
+Test final,20% estratificado,Reserva una evaluación final no usada durante la comparación interna.
+Validación interna,"RepeatedStratifiedKFold, 5 folds x 30 repeticiones",Reduce la dependencia de una única partición en un dataset moderado.
+Dataset de entrada,foot_clean.csv + Pipeline,Evita fuga de información al ajustar escalado y one-hot solo con entrenamiento.
+Métrica principal,recall_condition_1,Mide cuántos pacientes con condition=1 son detectados.
+Coste médico,"FN=5, FP=1",Penaliza más dejar sin detectar un caso real que activar una alarma falsa.
+Umbral,Umbral por defecto,Permite comparar modelos base de forma homogénea antes de optimizar umbrales.
