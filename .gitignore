@@ -430,3 +430,11 @@ FodyWeavers.xsd
 
 # Python virtual environments
 .venv/
+
+# LaTeX report: keep only the source we edit/use.
+latex/*
+!latex/REPORT.tex
+!latex/compile_report.ps1
+latex_nbconvert/
+REPORT_files/
+notebook.*

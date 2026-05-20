@@ -1,3 +1,30 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "files.exclude": {
+        "**/.venv": true,
+        "**/__pycache__": true,
+        "latex/MiKTeX": true,
+        "latex/MiKTeXPortable": true,
+        "latex/nbconvert_tex": true,
+        "latex/nbconvert_pdf": true,
+        "latex/tools": true
+    },
+    "search.exclude": {
+        "**/.venv": true,
+        "**/__pycache__": true,
+        "latex/MiKTeX": true,
+        "latex/MiKTeXPortable": true,
+        "latex/nbconvert_tex": true,
+        "latex/nbconvert_pdf": true,
+        "latex/tools": true
+    },
+    "files.watcherExclude": {
+        "**/.venv/**": true,
+        "**/__pycache__/**": true,
+        "latex/MiKTeX/**": true,
+        "latex/MiKTeXPortable/**": true,
+        "latex/nbconvert_tex/**": true,
+        "latex/nbconvert_pdf/**": true,
+        "latex/tools/**": true
+    }
 }
