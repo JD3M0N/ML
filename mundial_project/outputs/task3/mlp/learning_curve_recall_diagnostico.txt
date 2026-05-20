@@ -1,0 +1,3 @@
+Diagnostico automatizado:
+Train recall (ult.): 0.674  |  Val recall (ult.): 0.625  |  Gap: 0.050  |  Tendencia: estable
+Interpretacion: Buen ajuste: poca diferencia entre entrenamiento y validacion y recall razonable en validacion.

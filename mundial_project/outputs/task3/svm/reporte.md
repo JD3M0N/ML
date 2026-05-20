@@ -47,3 +47,24 @@ La metrica principal es el recall de `condition=1` porque un falso negativo impl
 - `test_matriz_confusion.png`
 - `test_roc_curve.png`
 - `learning_curve_recall.png`
+
+## Diagnostico de la curva de aprendizaje
+
+Diagnostico automatizado:
+Train recall (ult.): 0.905  |  Val recall (ult.): 0.752  |  Gap: 0.154  |  Tendencia: estable
+Interpretacion: Posible sobreajuste: el recall en entrenamiento es significativamente mayor que en validacion.
+
+## Posibles causas de bajo accuracy en redes neuronales y recomendaciones
+
+- Desequilibrio de clases: si la clase positiva es rara, la accuracy global puede ser alta aunque el modelo falle en detectar la condicion.
+- Infraajuste: arquitectura o capacidad insuficiente, learning rate inapropiado, o pocas iteraciones.
+- Sobreajuste: modelo demasiado complejo sin regularizacion adecuada; gap grande entre entrenamiento y validacion.
+- Preprocesado: features irrelevantes o mal escaladas afectan la convergencia; revisar estandarizacion y encoding.
+- Hiperparametros: `alpha` (regularizacion), `learning_rate_init`, `hidden_layer_sizes` y `max_iter` influyen fuertemente.
+- Early stopping: si esta activado puede detener antes de convergencia si la validacion es ruidosa.
+
+Recomendaciones:
+- Revisar balance de clases y usar `class_weight='balanced'` o re-muestreo si procede.
+- Probar aumentar `max_iter`, ajustar `learning_rate_init` y `alpha`, y explorar diferentes `hidden_layer_sizes`.
+- Usar validacion cruzada estable y observar curvas de aprendizaje (ya generadas) para decidir si mas datos ayudarian.
+- Priorizar metrics de interes (recall para la clase positiva) en lugar de accuracy.
